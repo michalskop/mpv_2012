@@ -17,9 +17,9 @@ class MdsMatrix
   * - \c until date until in ISO format, default 'infinity' (e.g., '2012-12-01')
   * - \c vote_kind_codes list of vote_kind_codes meaning 'for', default 'y,n,a'
   * - \c number_mps maximum number of MPs in one division
-  * - \c file output json file, if set, writes json into it
+  * - \c output json file, if set, writes json into it
   *
-  * \return Matrix of 'correlations'
+  * \return Array: Matrix of 'correlations', Parliament, Dates (since, until)
   */
 
   public function read($params)
@@ -117,6 +117,7 @@ class MdsMatrix
     $query->setQuery("
 	 	SELECT 
 		  d.id,
+		  max(d.date) as date,
 		  cast(count(*) as float)/$1 as w1, 
 		  1/(abs( ((count(*)+sum(mv.vote))/2) - round(count(*)/2+1)-.5 ) +.5) as w2,--1/(abs(n_yes-needed)+.5); needed=round(count/2+1)-.5
 		  ($1-cast(count(*)+sum(mv.vote) as float)/2)/($1-1) as wy, --n_yes = (count(*)+sum(mv.vote))/2; n_no = (count(*)-sum(mv.vote))/2
@@ -201,6 +202,19 @@ class MdsMatrix
 	");
 	$triang_matrix = $query->execute();
 	
+	//get min and max date from division
+		//query calculate the matrix
+	$query = new Query();
+    $query->setQuery("
+      SELECT min(date) as since, max(date) as until FROM x_mds_division_{$rand}
+    ");
+    $dates = $query->execute();
+    //set info
+    $out = array(
+      'info' => array('since' => $dates[0]['since'], 'until' => $dates[0]['until'], 'parliament_code' => $params['parliament_code']),
+      'matrix' => $triang_matrix
+    );
+	
 	//clean up
 	$query = new Query();
     $query->setQuery("DROP TABLE x_mds_division_{$rand}");
@@ -210,14 +224,14 @@ class MdsMatrix
     $query->execute();
     
     //write to file
-    if (isset($params['file'])) {
-      $json = json_encode($triang_matrix);
-      $file = fopen($params['file'],"w+");
+    if (isset($params['output'])) {
+      $json = json_encode($out);
+      $file = fopen($params['output'],"w+");
       fwrite($file,$json);
       fclose($file);
     }
     
-    return $triang_matrix;
+    return $out;
   }
 
 }

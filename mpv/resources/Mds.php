@@ -15,13 +15,13 @@ class Mds
   * \param $params An array of pairs <em>parameter => value</em>. Available parameters are:
   * - \c input required json file
   * - \c low_limit lower limit for inclusion in computation, default 0=all MPs
-  * - \c file output json file
+  * - \c output output json file
   * - \c dim number of dimension, default 4
   * - \c digit number of digits, default 4
   * - \c temp_path  path to writable temporary directory, default '\tmp'
-  * - \c leave_file if set, leaves R file 
+  * - \c leave_file if set, leaves R file undeleted
   *
-  * \return Matrix of calculated positions usinf mutlidimensional scaling
+  * \return Matrix of calculated positions using multidimensional scaling
   */
   public function read($params)
   {
@@ -33,9 +33,11 @@ class Mds
     $default_digit = 4;
     
     //triangular matrix
-    $triang_matrix = json_decode(file_get_contents($params['input']));
+    $triang_matrix_ar = json_decode(file_get_contents($params['input']));
+    $triang_matrix = $triang_matrix_ar->matrix;
     
     //apply low_limit
+    $low = array();
     if (isset($params['low_limit'])) {
       //first find max of together
       $max = $triang_matrix[0]->together;
@@ -43,7 +45,6 @@ class Mds
         if ($row->together > $max) $max = $row->together;
       }
       //now find mps with lower than low_limit
-      $low = array();
       foreach($triang_matrix as $row) {
         if (($row->mp_id_1 == $row->mp_id_2) and ($row->together < ($params['low_limit']*$max))) 
           $low[] = $row->mp_id_1;
@@ -113,7 +114,7 @@ class Mds
 	if (!isset($params['leave_file'])) unlink ("{$temp_path}mds_{$rand}.r");
 	
 	//output
-	$out = array('mps' => $mps);
+	$out = array('mps_low' => $low, 'mps' => $mps);
 	//coordinates
 	$coordinates = array();
 	for ($i = 1; $i <= count($mps); $i++) {
@@ -137,10 +138,13 @@ class Mds
 	}
 	$out['gof'] = $gof;
 	
+	//info
+	$out['info'] = $triang_matrix_ar->info;
+	
     //write to file
-    if (isset($params['file'])) {
+    if (isset($params['output'])) {
       $json = json_encode($out);
-      $file = fopen($params['file'],"w+");
+      $file = fopen($params['output'],"w+");
       fwrite($file,$json);
       fclose($file);
     }
