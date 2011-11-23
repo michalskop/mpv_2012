@@ -18,7 +18,7 @@ class Mds
   * - \c output output json file
   * - \c dim number of dimension, default 4
   * - \c digit number of digits, default 4
-  * - \c temp_path  path to writable temporary directory, default '\tmp'
+  * - \c temp_path  path to writable temporary directory, default '/tmp/'
   * - \c leave_file if set, leaves R file undeleted
   *
   * \return Matrix of calculated positions using multidimensional scaling

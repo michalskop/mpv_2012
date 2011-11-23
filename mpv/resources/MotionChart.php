@@ -12,10 +12,11 @@ class MotionChart {
   * - \c include_script whether to include the line <script type='text/javascript' src='http://www.google.com/jsapi'></script>; default = true
   * - \c include_tags whether to include the lines <script type='text/javascript'> </script>; default true
   * - \c include_div whether to include the line <div id="chart_div" ></div>; default = true
-  * - \c custom_code included to differ the script (if more such charts on a webpage)
+  * - \c custom_code included to differ the script (if more such charts on a webpage); e.g. custom_code='xyz' makes <div id='chart_div'> into <div id='chart_div_xyz'>
   * - \c options set of options; e.g., options=showChartButtons:false,showXScalePicker:false
   * - \c language
-  * - \c order group; e.g., order=Klub,ODS,TOP09-S,VV,KSČM,ČSSD|...
+  * - \c order groups; e.g., order=Klub,ODS,TOP09-S,VV,KSČM,ČSSD|...
+  * - \c order_dim order by one dimension; e.g. order_dim=Party:Dimension 1
   *
   * \return script for motion chart
   */
@@ -30,6 +31,10 @@ class MotionChart {
     if (isset($params['custom_code'])) $custom_code = '_' . $params['custom_code'];
     else $custom_code = '';
     
+    //order by group by dimension
+    if (isset($params['order_dim']))
+      $params['order'] = $this->order_dim($input,$params['order_dim']);
+    
     //order groups
     if (isset($params['order'])) 
       $input = $this->order($input,$params['order']);
@@ -43,7 +48,7 @@ class MotionChart {
     	$out .= "<script type='text/javascript'>\n";
     
     //include part with language
-    if (isset($params['language'])) $lang = ",'language' : 'en_GB'"; else $lang = '';
+    if (isset($params['language'])) $lang = ",'language' : '{$params['language']}'"; else $lang = '';
     $out .= "    google.load('visualization', '1', {'packages':['motionchart']{$lang}});
     google.setOnLoadCallback(drawChart{$custom_code});
     function drawChart{$custom_code}() {
@@ -63,7 +68,7 @@ class MotionChart {
 	  $d .= "	[";
 	  foreach($row as $item) {
 		if ($input->columns[$j]->type == 'string')
-		  $r[] = "'" . $item . "'";
+		  $r[] = "'" . str_replace("'"," ",$item) . "'";
 		else 
 		  $r[] = $item ;
 		$j++;
@@ -104,6 +109,31 @@ class MotionChart {
   }
   
   /**
+  * create 'order text' by ordering using sums of one dimension 
+  * \param param e.g., 'Klub:Dimenze 1'
+  */
+  private function order_dim($input,$param) {
+    //
+    $p = explode(':',$param);
+    //find dimension
+    foreach ($input->columns as $key=>$col) {
+      if ($col->name == $p[0]) $ckey = $key;
+      if ($col->name == $p[1]) $skey = $key; 
+    }
+    if (!isset($ckey) or !isset($skey)) return '';
+    // sums
+    $sums = array();
+    foreach ($input->data as $row) {
+      if (isset($sums[$row[$ckey]])) $sums[$row[$ckey]] -= $row[$skey];
+      else $sums[$row[$ckey]] = -1*$row[$skey];
+    }
+    asort($sums);
+    //get string
+    return implode(',',array($p[0],implode(',',array_keys($sums))));
+
+  }
+  
+  /**
   * orders group (adds number before the name); e.g. ODS -> 1-ODS
   */
   
@@ -136,7 +166,7 @@ class MotionChart {
   
   private function n($number,$digits) {
     $diff = $digits - strlen($number);
-    for($i = 1; $i < $diff; $i++)
+    for($i = 1; $i <= $diff; $i++)
       $number = '0' . $number;
     return $number;  
   }

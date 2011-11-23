@@ -2,36 +2,21 @@
 /**
  * \ingroup mpv
  *
- * Creates datafile with calculated multidimensional scaling coordinates
+ * Creates datafile with calculated multidimensional scaling coordinates by joining several datafiles (to make it 'motion')
  */
 class MdsData {
   /**
-  * Creates datafile with calculated multidimensional scaling coordinates
+  * Creates datafile with calculated multidimensional scaling coordinates by joining several datafiles (to make it 'motion')
   *
   * \param $params An array of pairs <em>parameter => value</em>. Available parameters are:
-  * - \c parliament_code required parliament code (e.g., 'cz/psp')
-  * - \c modulo selects only each modulo's division, default 1 (e.g., '10')
-  * - \c since date since in ISO format, default '-infinity' (e.g., '2011-09-01')
-  * - \c until date until in ISO format, default 'infinity' (e.g., '2012-12-01')
-  * - \c vote_kind_codes list of vote_kind_codes meaning 'for', default 'y,n,a'
-  * - \c number_mps maximum number of MPs in one division
+  * - \c input required  (required input or input_dir)json file
+  * - \c input_dir required (required input or input_dir) directory of input json files with coordinates (if there are more of them)
+  * - \c output required output json file
   *
-  * - \c low_limit lower limit for inclusion in computation, default 0=all MPs
-  * - \c dim number of dimension, default 4
-  * - \c digit number of digits, default 4
-  * - \c temp_path  path to writable temporary directory, default '\tmp'
-  * - \c leave_file if set, leaves R file undeleted
-  * - \c output output json file
-  *
-  * - \c period if set, calculates more MDSs; possible values: 'y','q','m'
-  * - \c input input json file with coordinates
-  * - \c input_dir directory of input json files with coordinates (if there are more of them)
-  *
-  * - \c color
-  * - \c order order of groups
-  * - \c rotation 
-  * - \c columns
-  * - \c local_id if sets, add a local id into names
+  * - \c color **not implemented yet
+  * - \c rotation rotates files to keep a group at a position; e.g. rotation=Party,PT,-1,1,1,1
+  * - \c columns specifies columns; e.g. columns=Name,last_name|Date,number|Dimension 1|Dimension 2|Party,political group:name|State,constituency:name
+  * - \c local_id if sets, add a local id into names (to keep them unique); e.g. Albert -> Albert (1)
   */
   
   /// API client reference used for all API calls
