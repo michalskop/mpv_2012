@@ -68,7 +68,7 @@ class MotionChart {
 	  $d .= "	[";
 	  foreach($row as $item) {
 		if ($input->columns[$j]->type == 'string')
-		  $r[] = "'" . str_replace("'"," ",$item) . "'";
+		  $r[] = "'" . str_replace("'"," ",html_entity_decode($item)) . "'";
 		else 
 		  $r[] = $item ;
 		$j++;
@@ -123,9 +123,18 @@ class MotionChart {
     if (!isset($ckey) or !isset($skey)) return '';
     // sums
     $sums = array();
+    $ns = array();
     foreach ($input->data as $row) {
-      if (isset($sums[$row[$ckey]])) $sums[$row[$ckey]] -= $row[$skey];
-      else $sums[$row[$ckey]] = -1*$row[$skey];
+      if (isset($sums[$row[$ckey]])) {
+        $sums[$row[$ckey]] -= $row[$skey];
+        $ns[$row[$ckey]] ++;
+      } else {
+        $sums[$row[$ckey]] = -1*$row[$skey];
+        $ns[$row[$ckey]] = 1;
+      }
+    }
+    foreach ($sums as $key => $sum) {
+      $sums[$key] = $sums[$key]/$ns[$key];
     }
     asort($sums);
     //get string

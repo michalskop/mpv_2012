@@ -141,9 +141,12 @@ class MdsData {
 			      if (($groups[$membership['group_id']]['group_kind_code'] == $kind[0]) and
 			       ($groups[$membership['group_id']]['parliament_code'] == $input->info->parliament_code))
 			      {
-			        $row[] = $groups[$membership['group_id']][$kind[1]];
-			        $ok = true;
+			        if (!$ok) { //if there are 2 memberships, which should not be, use only 1
+			          $row[] = $groups[$membership['group_id']][$kind[1]];
+			          $ok = true;
+			        }
 			        continue;
+			        
 			      }
 			  }
 	        }

@@ -44,7 +44,7 @@ class MdsMotion {
   public function read($params) {
     if (!isset($params['parliament_code']))
     	return array(); 
-  
+
     //defaults
     $default_since = '-infinity';
     $default_until = 'infinity';
@@ -64,8 +64,8 @@ class MdsMotion {
 	//global since and until
 	$query = new Query();
     $query->setQuery("
-        SELECT min(date) as since, max(date) as until FROM division
-        WHERE date>=$1 AND date<$2 AND parliament_code=$3
+        SELECT min(divided_on) as since, max(divided_on) as until FROM division
+        WHERE divided_on>=$1 AND divided_on<$2 AND parliament_code=$3
 	  ");
 	  //parameters
 	if (isset($params['since'])) $query->appendParam($params['since']);
@@ -90,6 +90,10 @@ class MdsMotion {
 	  case 'q':
 	    $start = new DateTime($since->format("Y") . '-' . (floor(($since->format("m")-1)/3)*3+1) . '-01');
 	    $interval = new DateInterval('P3M');
+	    break;
+	  case 'h':
+	    $start = new DateTime($since->format("Y") . '-' . (floor(($since->format("m")-1)/6)*6+1) . '-01');
+	    $interval = new DateInterval('P6M');
 	    break;
 	  case 'y':
 	    $start = new DateTime($since->format("Y").'-01-01');

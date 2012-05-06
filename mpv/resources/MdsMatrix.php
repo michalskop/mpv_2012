@@ -56,7 +56,7 @@ class MdsMatrix
 		FROM mp_vote as mv
 		LEFT JOIN division as d
 		ON mv.division_id = d.id
-		WHERE \"date\" >= $1 AND \"date\" <= $2 
+		WHERE \"divided_on\" >= $1 AND \"divided_on\" <= $2 
 		AND d.parliament_code = $3
 		AND vote_kind_code IN ({$vote_kind_codes})
 		AND mod(d.id,$4) = 0;
@@ -94,7 +94,7 @@ class MdsMatrix
 	 	  FROM mp_vote as mv
 			LEFT JOIN division as d
 			ON mv.division_id = d.id
-	 	  WHERE \"date\" >= $1 AND \"date\" <= $2 
+	 	  WHERE \"divided_on\" >= $1 AND \"divided_on\" <= $2 
 		  AND d.parliament_code = $3
 		  GROUP BY d.id) as t
 	 	");
@@ -117,7 +117,7 @@ class MdsMatrix
     $query->setQuery("
 	 	SELECT 
 		  d.id,
-		  max(d.date) as date,
+		  max(d.divided_on) as divided_on,
 		  cast(count(*) as float)/$1 as w1, 
 		  1/(abs( ((count(*)+sum(mv.vote))/2) - round(count(*)/2+1)-.5 ) +.5) as w2,--1/(abs(n_yes-needed)+.5); needed=round(count/2+1)-.5
 		  ($1-cast(count(*)+sum(mv.vote) as float)/2)/($1-1) as wy, --n_yes = (count(*)+sum(mv.vote))/2; n_no = (count(*)-sum(mv.vote))/2
@@ -206,7 +206,7 @@ class MdsMatrix
 		//query calculate the matrix
 	$query = new Query();
     $query->setQuery("
-      SELECT min(date) as since, max(date) as until FROM x_mds_division_{$rand}
+      SELECT min(divided_on) as since, max(divided_on) as until FROM x_mds_division_{$rand}
     ");
     $dates = $query->execute();
     //set info

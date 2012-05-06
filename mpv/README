@@ -1,0 +1,10 @@
+Models of Parliamentary Votings
+
+Multidimensional Scaling:
+
+steps:
+1. MdsMatrix
+2. Mds
+3. MdsMotion
+4. MdsData
+5. MdsChart
